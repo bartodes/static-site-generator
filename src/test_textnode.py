@@ -1,6 +1,6 @@
 import unittest
 
-from textnode import TextNode, TextType, text_node_to_html_node
+from textnode import TextNode, TextType, text_node_to_html_node, split_nodes_delimeter
 
 
 class TestTextNode(unittest.TestCase):
@@ -23,6 +23,37 @@ class TestTextNode(unittest.TestCase):
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "This is a text node")
+    
+    def test_split_bold(self):
+        node = TextNode("This is a normal **with bold** and `code`", TextType.NORMAL) 
+        new_nodes = split_nodes_delimeter([node],"**",TextType.BOLD)
+        expected_nodes = [
+            TextNode("This is a normal " , TextType.NORMAL),
+            TextNode("with bold" , TextType.BOLD),
+            TextNode(" and `code`", TextType.NORMAL)
+        ]
+        self.assertEqual(new_nodes,expected_nodes)
+    
+    
+    def test_split_code(self):
+        node = TextNode("This is a normal and `code text`", TextType.NORMAL) 
+        new_nodes = split_nodes_delimeter([node],"`",TextType.CODE)
+        expected_nodes = [
+            TextNode("This is a normal and " , TextType.NORMAL),
+            TextNode("code text", TextType.CODE)
+        ]
+        self.assertEqual(new_nodes,expected_nodes)
+
+    def test_split_italic(self):
+        node = TextNode("_This is italic_", TextType.NORMAL) 
+        new_nodes = split_nodes_delimeter([node],"_",TextType.ITALIC)
+        expected_nodes = [TextNode("This is italic" , TextType.ITALIC)]
+        self.assertEqual(new_nodes,expected_nodes)
+    
+    def test_split_not_closed_delimiter(self):
+        node = TextNode("_This is italic", TextType.NORMAL) 
+        with self.assertRaises(ValueError):
+            split_nodes_delimeter([node],"_",TextType.ITALIC)
 
 if __name__ == "__main__":
     unittest.main()
