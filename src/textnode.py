@@ -46,3 +46,28 @@ def text_node_to_html_node(text_node:TextNode):
         return LeafNode("img","",{"src": text_node.url,"alt": text_node.text})
     
     raise ValueError(f"invalid text type: {text_node.text_type}")
+
+def split_nodes_delimeter(old_nodes,delimiter,text_type):
+    new_nodes = []
+
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.NORMAL:
+            new_nodes.append(old_node)
+            continue
+        
+        split_nodes = []
+        sections = old_node.text.split(delimiter)
+        
+        if len(sections) % 2 == 0:
+            raise ValueError(f"invalid markdown syntax: no closing delimeter for '{delimiter}'")
+        
+        for i in range(len(sections)):
+            if sections[i] == "":
+                continue
+            if i % 2 == 0:
+                split_nodes.append(TextNode(sections[i], TextType.NORMAL))
+            else:
+                split_nodes.append(TextNode(sections[i], text_type))
+        new_nodes.extend(split_nodes)
+
+    return new_nodes
